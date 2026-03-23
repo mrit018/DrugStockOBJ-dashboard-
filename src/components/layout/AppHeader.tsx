@@ -133,6 +133,9 @@ export function AppHeader() {
               <div className="flex flex-col text-right">
                 <span className="text-sm font-medium leading-tight text-white">
                   {session.userInfo.name}
+                  <span className="ml-2 text-[10px] font-mono opacity-40 select-all" title="BMS Session ID">
+                    ({session.sessionId})
+                  </span>
                 </span>
                 <span className="text-[11px] leading-tight text-white/50">
                   {session.userInfo.department}
