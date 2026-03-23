@@ -1,0 +1,34 @@
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BmsSessionProvider } from '@/contexts/BmsSessionContext'
+import { SessionValidator } from '@/components/session/SessionValidator'
+import { LoadingSpinner } from '@/components/layout/LoadingSpinner'
+import { AppLayout } from '@/components/layout/AppLayout'
+
+const PharmacyAnalytics = lazy(() => import('@/pages/PharmacyAnalytics'))
+
+function AppRoutes() {
+  return (
+    <Suspense fallback={<LoadingSpinner size="lg" message="กำลังโหลดหน้า..." className="min-h-[50vh]" />}>
+      <Routes>
+        <Route path="/" element={<PharmacyAnalytics />} />
+        {/* Redirect any other path to the home (Pharmacy) page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <BmsSessionProvider>
+        <SessionValidator>
+          <AppLayout>
+            <AppRoutes />
+          </AppLayout>
+        </SessionValidator>
+      </BmsSessionProvider>
+    </BrowserRouter>
+  )
+}
