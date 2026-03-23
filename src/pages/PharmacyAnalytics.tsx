@@ -14,12 +14,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { DrugUsageChart } from '@/components/charts/DrugUsageChart';
-import { Pill, BarChart3, ClipboardList, AlertCircle, FileSpreadsheet, FileText, Download } from 'lucide-react';
+import { Pill, BarChart3, ClipboardList, AlertCircle, FileSpreadsheet, FileText, Download, Share2, CloudUpload } from 'lucide-react';
 import { getDateRange, formatDateISO } from '@/utils/dateUtils';
 import { exportToExcel, exportToPdf } from '@/utils/exportUtils';
+import { sendToGoogleAppScript } from '@/services/exportService';
+
+// Placeholder for Google App Script Web App URL - replace with actual URL
+const GOOGLE_APP_SCRIPT_URL = 'YOUR_GOOGLE_APP_SCRIPT_WEB_APP_URL_HERE';
 
 export default function PharmacyAnalytics() {
   const { session, connectionConfig } = useBmsSessionContext();
+  const [isSending, setIsSending] = useState(false);
   
   // Default to last 30 days for usage report
   const initialRange = getDateRange(30);
@@ -117,6 +122,29 @@ export default function PharmacyAnalytics() {
     exportToPdf(`Procurement Planning Report`, columns, procurementPlan, `ProcurementPlan_${formatDateISO(new Date())}`);
   };
 
+  const handleSendToGoogle = async (reportName: string, data: any[]) => {
+    if (!session || !data || data.length === 0) return;
+    
+    setIsSending(true);
+    try {
+      const payload = {
+        hospitalCode: session.userInfo.hospitalCode,
+        hospitalName: 'องค์การบริหารส่วนจังหวัดกาญจนบุรี', // Could also come from systemInfo if available
+        reportName,
+        reportDate: reportName.includes('การใช้ยา') ? `${startDate} ถึง ${endDate}` : formatDateISO(new Date()),
+        data,
+        timestamp: new Date().toISOString()
+      };
+      
+      await sendToGoogleAppScript(GOOGLE_APP_SCRIPT_URL, payload);
+      alert('ส่งข้อมูลไปยัง Google Sheet สำเร็จ');
+    } catch (error) {
+      alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   if (!session) return null;
 
   return (
@@ -175,8 +203,17 @@ export default function PharmacyAnalytics() {
                     />
                     <div className="flex items-center gap-1.5 ml-2">
                       <button
+                        onClick={() => handleSendToGoogle('รายงานการใช้ยา', usageReport || [])}
+                        disabled={isLoadingUsage || isSending || !usageReport?.length}
+                        className="flex items-center gap-1.5 rounded-md bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                        title="Send to Google Sheet"
+                      >
+                        <CloudUpload className="h-4 w-4" />
+                        {isSending ? 'กำลังส่ง...' : 'ส่ง Google'}
+                      </button>
+                      <button
                         onClick={handleExportUsageExcel}
-                        disabled={isLoadingUsage || !usageReport?.length}
+                        disabled={isLoadingUsage || isSending || !usageReport?.length}
                         className="flex items-center gap-1.5 rounded-md bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors disabled:opacity-50"
                         title="Export to Excel"
                       >
@@ -185,7 +222,7 @@ export default function PharmacyAnalytics() {
                       </button>
                       <button
                         onClick={handleExportUsagePdf}
-                        disabled={isLoadingUsage || !usageReport?.length}
+                        disabled={isLoadingUsage || isSending || !usageReport?.length}
                         className="flex items-center gap-1.5 rounded-md bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors disabled:opacity-50"
                         title="Export to PDF"
                       >
@@ -260,8 +297,17 @@ export default function PharmacyAnalytics() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button
+                      onClick={() => handleSendToGoogle('แผนประมาณการสั่งซื้อยา', procurementPlan || [])}
+                      disabled={isLoadingProcurement || isSending || !procurementPlan?.length}
+                      className="flex items-center gap-1.5 rounded-md bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                      title="Send to Google Sheet"
+                    >
+                      <CloudUpload className="h-4 w-4" />
+                      {isSending ? 'กำลังส่ง...' : 'ส่ง Google'}
+                    </button>
+                    <button
                       onClick={handleExportProcurementExcel}
-                      disabled={isLoadingProcurement || !procurementPlan?.length}
+                      disabled={isLoadingProcurement || isSending || !procurementPlan?.length}
                       className="flex items-center gap-1.5 rounded-md bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors disabled:opacity-50"
                       title="Export to Excel"
                     >
@@ -270,7 +316,7 @@ export default function PharmacyAnalytics() {
                     </button>
                     <button
                       onClick={handleExportProcurementPdf}
-                      disabled={isLoadingProcurement || !procurementPlan?.length}
+                      disabled={isLoadingProcurement || isSending || !procurementPlan?.length}
                       className="flex items-center gap-1.5 rounded-md bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors disabled:opacity-50"
                       title="Export to PDF"
                     >
