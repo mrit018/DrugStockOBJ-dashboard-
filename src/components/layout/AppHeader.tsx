@@ -3,11 +3,14 @@
 // Professional navigation header with icons, user info, and connection status.
 // =============================================================================
 
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useBmsSessionContext } from '@/contexts/BmsSessionContext';
 import {
   Activity,
   Building2,
+  Copy,
+  Check,
   LayoutDashboard,
   LogOut,
   Pill,
@@ -37,6 +40,15 @@ const NAV_TABS: NavTab[] = [
 export function AppHeader() {
   const { session, disconnectSession } = useBmsSessionContext();
   const location = useLocation();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopySessionId = () => {
+    if (session?.sessionId) {
+      navigator.clipboard.writeText(session.sessionId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const databaseLabel =
     session?.databaseType === 'postgresql' ? 'PostgreSQL' : 'MySQL';
@@ -131,12 +143,29 @@ export function AppHeader() {
                 {userInitial}
               </div>
               <div className="flex flex-col text-right">
-                <span className="text-sm font-medium leading-tight text-white">
-                  {session.userInfo.name}
-                  <span className="ml-2 text-[10px] font-mono opacity-40 select-all" title="BMS Session ID">
-                    ({session.sessionId})
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-sm font-medium leading-tight text-white">
+                    {session.userInfo.name}
                   </span>
-                </span>
+                  <button
+                    onClick={handleCopySessionId}
+                    className="group relative flex items-center gap-1 text-[10px] font-mono text-white/40 hover:text-white transition-colors cursor-pointer"
+                    title="Click to copy BMS Session ID"
+                  >
+                    ({session.sessionId.substring(0, 8)}...)
+                    {copied ? (
+                      <Check className="h-3 w-3 text-green-400" />
+                    ) : (
+                      <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                    {/* Tooltip feedback */}
+                    {copied && (
+                      <span className="absolute -top-8 right-0 rounded bg-green-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg animate-in fade-in slide-in-from-bottom-1">
+                        คัดลอกแล้ว!
+                      </span>
+                    )}
+                  </button>
+                </div>
                 <span className="text-[11px] leading-tight text-white/50">
                   {session.userInfo.department}
                 </span>
