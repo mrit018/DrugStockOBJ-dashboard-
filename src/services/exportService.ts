@@ -19,7 +19,7 @@ export interface ExportReportPayload {
  */
 export async function sendToGoogleAppScript(url: string, payload: ExportReportPayload): Promise<boolean> {
   try {
-    const response = await fetch(url, {
+    await fetch(url, {
       method: 'POST',
       mode: 'no-cors', // Standard for GAS Web Apps to avoid CORS issues
       headers: {

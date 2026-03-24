@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { DrugUsageChart } from '@/components/charts/DrugUsageChart';
-import { Pill, BarChart3, ClipboardList, AlertCircle, FileSpreadsheet, FileText, Download, Share2, CloudUpload } from 'lucide-react';
+import { Pill, BarChart3, ClipboardList, AlertCircle, FileSpreadsheet, FileText, CloudUpload } from 'lucide-react';
 import { getDateRange, formatDateISO } from '@/utils/dateUtils';
 import { exportToExcel, exportToPdf } from '@/utils/exportUtils';
 import { sendToGoogleAppScript } from '@/services/exportService';

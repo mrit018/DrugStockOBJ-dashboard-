@@ -8,14 +8,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { useBmsSessionContext } from '@/contexts/BmsSessionContext';
 import {
   Activity,
-  Building2,
   Copy,
   Check,
-  LayoutDashboard,
   LogOut,
   Pill,
-  TrendingUp,
-  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
